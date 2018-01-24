@@ -18,13 +18,15 @@ void error(const char *s) {
 #define ERROR(f) if ((f) < 0) error(#f)
 
 char *const *mkargs(int argc, char *argv[]) {
-    const size_t extra = 4;
+    const size_t extra = 6;
     const size_t nargc = argc+extra;
     char* *nargv = malloc((nargc+1)*sizeof(char**));
     size_t i;
 
     i = 0;
     nargv[i++] = argv[0];
+    nargv[i++] = "-i";
+    nargv[i++] = "/bin/bash";
     nargv[i++] = "--noprofile";
     nargv[i++] = "--norc";
     nargv[i++] = "-s";
@@ -46,7 +48,7 @@ void reader(int rd, int wr, int argc, char* argv[]) {
     ERROR(dup2(rd, 0));
     ERROR(close(rd));
 
-    ERROR(execv("/bin/bash", mkargs(argc, argv)));
+    ERROR(execv("/bin/env", mkargs(argc, argv)));
 }
 
 void writer(int rd, int wr) {
