@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #sudo modprobe -r hid_rmi
 #sudo modprobe hid_rmi
 
@@ -8,23 +10,19 @@ user() {
         xinput --disable $PTR
         xinput --enable $PTR
     fi
-
-    echo -n 'reconnect'
 }
 
 root() {
-    tee /sys/bus/serio/devices/serio1/drvctl >/dev/null
+    echo -n 'reconnect' >/sys/bus/serio/devices/serio1/drvctl
     modprobe -r rmi_smbus
     modprobe rmi_smbus
 }
 
-sudo-cmd() {
-    pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY "$@"
-}
-
-exec-func() {
+unsudo-func() {
     func=$1
-    sudo-cmd /bin/bash -c "$(declare -f $func); $func"
+    sudo -u $USER bash -c "$(declare -f $func); $func"
 }
 
-user | exec-func root
+export PATH=/usr/bin:/usr/sbin:/bin
+unsudo-func user
+root

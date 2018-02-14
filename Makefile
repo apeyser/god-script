@@ -27,7 +27,7 @@ SCRIPTVAR=$(subst -,_,$*)_sh
 	@echo
 
 tester: SAVEVARS=EDITOR
-restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY
+restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 
 EXECS = tester restart-pointer
 all: $(EXECS)
