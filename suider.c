@@ -25,13 +25,14 @@ char** cleanenv() {
     char** ret = NULL;
     size_t retlen = 0;
     char* tok;
-    size_t toks;
+    size_t tokindex;
     char* const savevars = strdup(SAVEVARS);
     AE(savevars);
 
-    toks = 0;
-    tok = strtok(savevars, ":");
-    while (tok) {
+    for (tokindex = 0, tok = strtok(savevars, ":");
+         tok;
+         tokindex++, tok = strtok(NULL, ":"))
+    {
         const int toklen = strlen(tok);
         char** env;
         
@@ -44,16 +45,15 @@ char** cleanenv() {
             {
                 retlen += sizeof(char*);
                 AE(ret = realloc(ret, retlen));
-                ret[toks++] = envstr;
+                ret[tokindex] = envstr;
                 break;
             }
         }
-        tok = strtok(NULL, ":");
     }
 
     retlen += sizeof(char*);
     AE(ret = realloc(ret, retlen));
-    ret[toks] = NULL;
+    ret[tokindex] = NULL;
 
     return ret;
 }
@@ -78,6 +78,8 @@ char *const *mkargs(int argc, char *argv[]) {
     return nargv;
 }
 
+// cleanenv && mkargs do not clean up memory allocations:
+// an image swap will immediately follow
 void reader(int rd, int wr, int argc, char* argv[]) {
     pid_t f;
     
@@ -113,5 +115,5 @@ int main(int argc, char* argv[]) {
     if (WIFEXITED(wstatus))
         return WEXITSTATUS(wstatus);
 
-    return -1;
+    return -1; // core dump or such
 }
