@@ -26,19 +26,19 @@ char** cleanenv() {
     size_t retlen = 0;
     char* tok;
     size_t toks;
-    char* savevars;
+    char* const savevars = strdup(SAVEVARS);
+    AE(savevars);
 
-    AE(savevars = strdup(SAVEVARS));
     toks = 0;
     tok = strtok(savevars, ":");
     while (tok) {
-        int toklen = strlen(tok);
+        const int toklen = strlen(tok);
         char** env;
         
         for (env = environ; *env; env++) {
-            char* envstr;
+            char* const envstr = strdup(*env);
+            AE(envstr);
             
-            AE(envstr = strdup(*env));
             if (! strncmp(tok, envstr, toklen)
                 && envstr[toklen] == '=')
             {
