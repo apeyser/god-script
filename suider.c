@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <string.h>
 
 #include SCRIPTFILE
 
@@ -10,8 +11,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+static char* savevars;
 extern char **environ;
-static char *cleanenv[] = {NULL};
 
 void error(const char *s) {
     perror(s);
@@ -19,6 +20,36 @@ void error(const char *s) {
 }
 
 #define ERROR(f) if ((f) < 0) error(#f)
+
+char** cleanenv() {
+    char** ret = NULL;
+    size_t retlen = 0;
+    char* tok;
+    size_t toks;
+
+    toks = 0;
+    tok = strtok(savevars, ":");
+    while (tok) {
+        int toklen = strlen(tok);
+        char** env;
+        for (env = environ; *env; env++) {
+            char* str = *env;
+            if (! strncmp(tok, str, toklen) && str[toklen] == '=') {
+                retlen += sizeof(char*);
+                ret = realloc(ret, retlen);
+                ret[toks++] = str;
+                break;
+            }
+        }
+        tok = strtok(NULL, ":");
+    }
+
+    retlen += sizeof(char*);
+    ret = realloc(ret, retlen);
+    ret[toks] = NULL;
+
+    return ret;
+}
 
 char *const *mkargs(int argc, char *argv[]) {
     const size_t extra = 4;
@@ -49,7 +80,7 @@ void reader(int rd, int wr, int argc, char* argv[]) {
     ERROR(dup2(rd, 0));
     ERROR(close(rd));
 
-    environ = cleanenv;
+    environ = cleanenv();
     ERROR(execv("/bin/bash", mkargs(argc, argv)));
 }
 
@@ -63,6 +94,7 @@ void writer(int rd, int wr) {
 int main(int argc, char* argv[]) {
     int fd[2];
     int wstatus;
+    savevars = strdup(SAVEVARS);
 
     ERROR(pipe(fd));
 
