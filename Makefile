@@ -33,4 +33,4 @@ EXECS = tester restart-pointer
 all: $(EXECS)
 clean: ; rm -f $(EXECS)
 
-#.SECONDARY:
+.SECONDARY:

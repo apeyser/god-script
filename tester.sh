@@ -10,4 +10,7 @@ echo
 echo Env:
 env
 
+echo "Return some stuff, hit ctrl-d to end"
+cat  | sed -re 's/^/Hi: /g'
+
 [[ $1 != error ]] || exit 5

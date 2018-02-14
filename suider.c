@@ -80,13 +80,17 @@ char *const *mkargs(int argc, char *argv[]) {
 
 // cleanenv && mkargs do not clean up memory allocations:
 // an image swap will immediately follow
+static int sfd;
 void reader(int rd, int wr, int argc, char* argv[]) {
     pid_t f;
+
+    ERROR(sfd = dup(0));
     
     ERROR(f = fork());
     if (f > 0) return;
     
-    ERROR(setuid(geteuid()));
+    ERROR(setuid(geteuid())); // become only root
+    
     ERROR(close(wr));
     ERROR(dup2(rd, 0));
     ERROR(close(rd));
@@ -96,9 +100,12 @@ void reader(int rd, int wr, int argc, char* argv[]) {
 }
 
 void writer(int rd, int wr) {
-    ERROR(seteuid(getuid()));
+    ERROR(seteuid(getuid())); // give up root
+
+    ERROR(close(sfd));    
     ERROR(close(rd));
-    ERROR(write(wr, SCRIPTVAR, SCRIPTVARLEN));
+    ERROR(dprintf(wr, "export STDIN=%i\n%*s",
+                  sfd, SCRIPTVARLEN, SCRIPTVAR));
     ERROR(close(wr));
 }
 
