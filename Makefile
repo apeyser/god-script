@@ -1,3 +1,5 @@
+all:
+
 CHMODFL=u+s
 CHMOD=sudo chmod
 CHOWN=sudo chown
@@ -7,7 +9,7 @@ XXD=xxd -i
 %.sh.h: %.sh
 	$(XXD) $< $@
 
-tester: suider.c tester.sh.h
+%: suider.c %.sh.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) \
 		-DSCRIPTFILE=\"$@.sh.h\" \
 		-DSCRIPTVAR=$@_sh \
@@ -15,3 +17,6 @@ tester: suider.c tester.sh.h
 		-o $@ $<
 	$(CHOWN) $(CHOWN_USER) $@
 	$(CHMOD) $(CHMODFL) $@
+
+EXECS = tester restart-pointer
+all: $(EXECS)
