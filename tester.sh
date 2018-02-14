@@ -1,9 +1,11 @@
 echo "Me: $0"
 echo "Args: $*"
-id -u -r
-id -u
+
+echo "Real uid: $(id -u -r)"
+echo "Effecutive uid $(id -u)"
 
 whoami
+echo
 
 echo Env:
 env

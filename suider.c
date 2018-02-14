@@ -11,7 +11,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-static char* savevars;
 extern char **environ;
 
 void error(const char *s) {
@@ -20,24 +19,32 @@ void error(const char *s) {
 }
 
 #define ERROR(f) if ((f) < 0) error(#f)
+#define AE(f) if (!(f)) error(#f)
 
 char** cleanenv() {
     char** ret = NULL;
     size_t retlen = 0;
     char* tok;
     size_t toks;
+    char* savevars;
 
+    AE(savevars = strdup(SAVEVARS));
     toks = 0;
     tok = strtok(savevars, ":");
     while (tok) {
         int toklen = strlen(tok);
         char** env;
+        
         for (env = environ; *env; env++) {
-            char* str = *env;
-            if (! strncmp(tok, str, toklen) && str[toklen] == '=') {
+            char* envstr;
+            
+            AE(envstr = strdup(*env));
+            if (! strncmp(tok, envstr, toklen)
+                && envstr[toklen] == '=')
+            {
                 retlen += sizeof(char*);
-                ret = realloc(ret, retlen);
-                ret[toks++] = str;
+                AE(ret = realloc(ret, retlen));
+                ret[toks++] = envstr;
                 break;
             }
         }
@@ -45,7 +52,7 @@ char** cleanenv() {
     }
 
     retlen += sizeof(char*);
-    ret = realloc(ret, retlen);
+    AE(ret = realloc(ret, retlen));
     ret[toks] = NULL;
 
     return ret;
@@ -54,9 +61,10 @@ char** cleanenv() {
 char *const *mkargs(int argc, char *argv[]) {
     const size_t extra = 4;
     const size_t nargc = argc+extra;
-    char* *nargv = malloc((nargc+1)*sizeof(char**));
+    char* *nargv;
     size_t i;
-
+    
+    AE(nargv = malloc((nargc+1)*sizeof(char**)));
     i = 0;
     nargv[i++] = argv[0];
     nargv[i++] = "--noprofile";
@@ -72,6 +80,7 @@ char *const *mkargs(int argc, char *argv[]) {
 
 void reader(int rd, int wr, int argc, char* argv[]) {
     pid_t f;
+    
     ERROR(f = fork());
     if (f > 0) return;
     
@@ -94,7 +103,6 @@ void writer(int rd, int wr) {
 int main(int argc, char* argv[]) {
     int fd[2];
     int wstatus;
-    savevars = strdup(SAVEVARS);
 
     ERROR(pipe(fd));
 
