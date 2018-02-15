@@ -2,46 +2,44 @@
 # Parameters                                      #
 ###################################################
 
-EXECS = tester restart-pointer
 CHMODFL = 4711
 CHOWN_USER = root
 XXD = xxd -i
 INSTALL = install
 
+# others:
+# VPATH =
+# prefix =
+
+# And our executables
+EXECS = tester restart-pointer
+
 ###################################################
 # default all                                     #
 ###################################################
-all:
-
 .PHONY: all
 all: exec
-
-###################################################
-# Clear suffixes                                  #
-###################################################
-
-.SUFFIXES:           # Delete the default suffixes
-.SUFFIXES: .sh .sh.h .c # Define our suffix list
-%: %.sh
 
 ###################################################
 # Header build deps                               #
 ###################################################
 
-%.sh.h: %.sh
-	$(XXD) -i $< $@
+define XXDCMD
+{ echo 'unsigned char script[] = {' && $(XXD) && echo '};' ; }<$< >$@
+endef
+
+HEADERS = $(EXECS:%=%.sh.h)
+$(HEADERS): %.sh.h: %.sh; $(XXDCMD)
 
 ###################################################
 # executable build deps                           #
 ###################################################
 
-VAR=$(subst -,_,$*)
-$(EXECS): %: suider.c %.sh.h
+$(EXECS): %: suider.c %.sh.h bash.h
 	@echo "Preserving environmental variables for $@: $(SAVEVARS)"
 	$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
-		-D$(VAR)_sh=script		\
-		-include "$*.sh.h" 		\
-		-include "bash.h" 		\
+		-include "$(@D)/$*.sh.h" 	\
+		-include "$(<D)/bash.h" 	\
 		-DSAVEVARS=$(SAVEVARS) 		\
 		-o $@ $<
 
@@ -59,10 +57,8 @@ restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 # STAGE target-name
 #
 # stage-name = $(EXECS:%=%.stage-name)
-#
-# .PHONY: stage-name stage-name.loop $(stage-name)
-# stage-name: stage-name.loop
-# stage-name.loop: $(stage-name)
+# .PHONY: stage-name $(stage-name)
+# stage-name: $(stage-name)
 #
 # Needed:
 # $(stage-name): %.stage-name: dependency
@@ -73,30 +69,34 @@ restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 #
 define STAGE =
 $(1) = $$(EXECS:%=%.$(1))
-
-.PHONY: $(1) $(1).loop $$($(1))
-$(1): $(1).loop
-$(1).loop: $$($(1))
+.PHONY: $(1) $$($(1))
+$(1): $$($(1))
 endef
 
 ###################################################
 # Boiler plate for exec, clean, intall, distclean #
 ###################################################
 
+# stages
+stages = exec clean install distclean
+$(foreach stage,$(stages),$(eval $(call STAGE,$(stage))))
+
+# stage definitions
 EXECCMD =
-$(eval $(call STAGE,exec))
 $(exec): %.exec: % ; $(EXECCMD)
 
 CLEANCMD = rm -f "$*"
-$(eval $(call STAGE,clean))
 $(clean): %.clean: ; $(CLEANCMD)
 
+hclean = $(HEADERS:%=%.clean)
+.PHONY: $(hclean)
+clean: $(hclean)
+$(hclean): %.clean: ; $(CLEANCMD)
+
 INSTALLCMD = $(INSTALL) -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
-$(eval $(call STAGE,install))
 $(install): %.install: % ; $(INSTALLCMD)
 
 DISTCLEANCMD = rm -f "$(DESTDIR)$(prefix)/$*"
-$(eval $(call STAGE,distclean))
 $(distclean): %.distclean: ; $(DISTCLEANCMD)
 distclean: clean
 
