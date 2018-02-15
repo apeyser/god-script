@@ -13,7 +13,7 @@ XXD = xxd -i
 	$(XXD) -i $< $@
 
 VAR=$(subst -,_,$*)
-%: suider.c %.sh.h
+$(EXECS): %: suider.c %.sh.h
 	@echo "Preserving environmental variables for $@: $(SAVEVARS)"
 	$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
 		-D$(VAR)_sh=script		\
@@ -25,16 +25,22 @@ VAR=$(subst -,_,$*)
 tester: SAVEVARS=EDITOR
 restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 
-.PHONY: all
-all: $(EXECS)
+all = $(EXECS:%=%.all)
+.PHONY: all $(all)
+all: $(all)
+$(all): %.all: %
+	@echo "Executable: $*"
 
-.PHONY: clean
-clean: ; rm -f $(EXECS)
+clean = $(EXECS:%=%.clean)
+.PHONY: clean $(clean)
+clean: $(clean)
+$(clean): %.clean:
+	rm -rf "$*"
 
-.PHONY: install
-install: $(EXECS)
-	for exec in $(EXECS); do \
-		install -D -o $(CHOWN_USER) -m $(CHMODFL) "$$exec" "$(DESTDIR)$(prefix)/$$exec"; \
-	done
+install = $(EXECS:%=%.install) 
+.PHONY: install $(install)
+install: $(install)
+$(install): %.install: %
+	install -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
 
 #.SECONDARY:
