@@ -25,22 +25,43 @@ $(EXECS): %: suider.c %.sh.h
 tester: SAVEVARS=EDITOR
 restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 
-all = $(EXECS:%=%.all)
-.PHONY: all $(all)
-all: $(all)
-$(all): %.all: %
+.PHONY: all
+all: exec
+
+.PHONY: exec
+exec: exec.loop
+
+exec = $(EXECS:%=%.exec)
+.PHONY: exec.loop $(exec)
+exec.loop: $(exec)
+$(exec): %.exec: %
 	@echo "Executable: $*"
 
+.PHONY: clean
+clean: clean.loop
+
 clean = $(EXECS:%=%.clean)
-.PHONY: clean $(clean)
-clean: $(clean)
+.PHONY: clean.loop $(clean)
+clean.loop: $(clean)
 $(clean): %.clean:
 	rm -rf "$*"
 
+.PHONY: install
+install: install.loop
+
 install = $(EXECS:%=%.install) 
-.PHONY: install $(install)
-install: $(install)
+.PHONY: install.loop $(install)
+install.loop: $(install)
 $(install): %.install: %
 	install -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
+
+.PHONY: distclean
+distclean: clean distclean.loop
+
+distclean = $(EXECS:%=%.distclean)
+.PHONY: distclean.loop $(distclean)
+distclean.loop: $(distclean)
+$(distclean): %.distclean:
+	rm -f "$*" "$(DESTDIR)$(prefix)/$*"
 
 #.SECONDARY:
