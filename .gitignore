@@ -1,3 +1,4 @@
 *.sh.h
 tester
 restart-pointer
+install/

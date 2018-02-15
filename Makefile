@@ -1,8 +1,6 @@
 all:
 
-CHMODFL=u+s
-CHMOD=sudo chmod
-CHOWN=sudo chown
+CHMODFL=4711
 CHOWN_USER=root
 XXD=xxd -i
 
@@ -22,9 +20,6 @@ VAR=$(subst -,_,$*)
 		-include "bash.h" 		\
 		-DSAVEVARS=$(SAVEVARS) 		\
 		-o $@ $<
-	$(CHOWN) $(CHOWN_USER) $@
-	$(CHMOD) $(CHMODFL) $@
-	@echo
 
 tester: SAVEVARS=EDITOR
 restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
@@ -32,5 +27,12 @@ restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 EXECS = tester restart-pointer
 all: $(EXECS)
 clean: ; rm -f $(EXECS)
+
+.PHONY: install
+install: $(EXECS)
+	[ -d "$(DESTDIR)$(prefix)" ] || mkdir -p "$(DESTDIR)$(prefix)"
+	for exec in $(EXECS); do \
+		install -o $(CHOWN_USER) -m $(CHMODFL) "$$exec" "$(DESTDIR)$(prefix)"; \
+	done
 
 #.SECONDARY:
