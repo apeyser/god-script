@@ -1,16 +1,39 @@
-all:
+###################################################
+# Parameters                                      #
+###################################################
 
 EXECS = tester restart-pointer
 CHMODFL = 4711
 CHOWN_USER = root
 XXD = xxd -i
+INSTALL = install
+
+###################################################
+# default all                                     #
+###################################################
+all:
+
+.PHONY: all
+all: exec
+
+###################################################
+# Clear suffixes                                  #
+###################################################
 
 .SUFFIXES:           # Delete the default suffixes
 .SUFFIXES: .sh .sh.h .c # Define our suffix list
 %: %.sh
 
+###################################################
+# Header build deps                               #
+###################################################
+
 %.sh.h: %.sh
 	$(XXD) -i $< $@
+
+###################################################
+# executable build deps                           #
+###################################################
 
 VAR=$(subst -,_,$*)
 $(EXECS): %: suider.c %.sh.h
@@ -22,46 +45,59 @@ $(EXECS): %: suider.c %.sh.h
 		-DSAVEVARS=$(SAVEVARS) 		\
 		-o $@ $<
 
+###################################################
+# executable flags                                #
+###################################################
+
 tester: SAVEVARS=EDITOR
 restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 
-.PHONY: all
-all: exec
+###################################################
+# Boiler function                                 #
+###################################################
 
-.PHONY: exec
-exec: exec.loop
+# STAGE target-name
+#
+# stage-name = $(EXECS:%=%.stage-name)
+#
+# .PHONY: stage-name stage-name.loop $(stage-name)
+# stage-name: stage-name.loop
+# stage-name.loop: $(stage-name)
+#
+# Needed:
+# $(stage-name): %.stage-name: dependency
+#     tool
+#
+# Can add other dependencies:
+# stage-name: other-deps
+#
+define STAGE =
+$(1) = $$(EXECS:%=%.$(1))
 
-exec = $(EXECS:%=%.exec)
-.PHONY: exec.loop $(exec)
-exec.loop: $(exec)
-$(exec): %.exec: %
-	@echo "Executable: $*"
+.PHONY: $(1) $(1).loop $$($(1))
+$(1): $(1).loop
+$(1).loop: $$($(1))
+endef
 
-.PHONY: clean
-clean: clean.loop
+###################################################
+# Boiler plate for exec, clean, intall, distclean #
+###################################################
 
-clean = $(EXECS:%=%.clean)
-.PHONY: clean.loop $(clean)
-clean.loop: $(clean)
-$(clean): %.clean:
-	rm -rf "$*"
+EXECCMD =
+$(eval $(call STAGE,exec))
+$(exec): %.exec: % ; $(EXECCMD)
 
-.PHONY: install
-install: install.loop
+CLEANCMD = rm -f "$*"
+$(eval $(call STAGE,clean))
+$(clean): %.clean: ; $(CLEANCMD)
 
-install = $(EXECS:%=%.install) 
-.PHONY: install.loop $(install)
-install.loop: $(install)
-$(install): %.install: %
-	install -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
+INSTALLCMD = $(INSTALL) -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
+$(eval $(call STAGE,install))
+$(install): %.install: % ; $(INSTALLCMD)
 
-.PHONY: distclean
-distclean: clean distclean.loop
-
-distclean = $(EXECS:%=%.distclean)
-.PHONY: distclean.loop $(distclean)
-distclean.loop: $(distclean)
-$(distclean): %.distclean:
-	rm -f "$*" "$(DESTDIR)$(prefix)/$*"
+DISTCLEANCMD = rm -f "$(DESTDIR)$(prefix)/$*"
+$(eval $(call STAGE,distclean))
+$(distclean): %.distclean: ; $(DISTCLEANCMD)
+distclean: clean
 
 #.SECONDARY:
