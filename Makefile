@@ -33,9 +33,8 @@ clean: ; rm -f $(EXECS)
 
 .PHONY: install
 install: $(EXECS)
-	[ -d "$(DESTDIR)$(prefix)" ] || mkdir -p "$(DESTDIR)$(prefix)"
 	for exec in $(EXECS); do \
-		install -o $(CHOWN_USER) -m $(CHMODFL) "$$exec" "$(DESTDIR)$(prefix)"; \
+		install -D -o $(CHOWN_USER) -m $(CHMODFL) "$$exec" "$(DESTDIR)$(prefix)/$$exec"; \
 	done
 
 #.SECONDARY:
