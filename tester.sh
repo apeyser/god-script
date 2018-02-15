@@ -3,7 +3,7 @@ echo "Args: $*"
 echo "Bash: $BASH"
 
 echo "Real uid: $(id -u -r)"
-echo "Effecutive uid: $(id -u)"
+echo "Effective uid: $(id -u)"
 
 echo "I am: $(whoami)"
 echo

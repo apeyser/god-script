@@ -12,7 +12,11 @@ INSTALL = install
 # prefix =
 
 # And our executables
-EXECS = tester restart-pointer
+SHSRC = tester.sh restart-pointer.sh
+SHEXEC = $(SHSRC:%.sh=%)
+PYSRC = pytester.py
+PYEXEC = $(PYSRC:%.py=%)
+EXECS = $(SHEXEC) $(PYEXEC)
 
 ###################################################
 # default all                                     #
@@ -28,20 +32,29 @@ define XXDCMD
 { echo 'unsigned char script[] = {' && $(XXD) && echo '};' ; }<$< >$@
 endef
 
-HEADERS = $(EXECS:%=%.sh.h)
-$(HEADERS): %.sh.h: %.sh; $(XXDCMD)
+HEADERS= $(SHSRC:%=%.h) $(PYSRC:%=%.h)
+$(HEADERS): %.h: %; $(XXDCMD)
 
 ###################################################
 # executable build deps                           #
 ###################################################
 
-$(EXECS): %: suider.c %.sh.h bash.h
-	@echo "Preserving environmental variables for $@: $(SAVEVARS)"
-	$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
-		-include "$(@D)/$*.sh.h" 	\
-		-include "$(<D)/bash.h" 	\
-		-DSAVEVARS=$(SAVEVARS) 		\
-		-o $@ $<
+define BUILD
+@echo "Preserving environmental variables for $@: $(SAVEVARS)"
+$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
+	-include "$(word 3,$^)"	 	\
+	-include "$(<D)/$(HEADER)" 	\
+	-DSAVEVARS=$(SAVEVARS) 		\
+	-o $@ "$(<D)/suider.c"
+endef
+
+$(SHEXEC): HEADER=bash.h
+$(SHEXEC): %: suider.c bash.h %.sh.h
+	$(BUILD)
+
+$(PYEXEC): HEADER=python.h
+$(PYEXEC): %: suider.c python.h %.py.h 
+	$(BUILD)
 
 ###################################################
 # executable flags                                #
