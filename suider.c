@@ -38,12 +38,12 @@ char** cleanenv() {
         char** env;
         
         for (env = environ; *env; env++) {
-            char* const envstr = strdup(*env);
-            AE(envstr);
-            
-            if (! strncmp(tok, envstr, toklen)
-                && envstr[toklen] == '=')
+            if (! strncmp(tok, *env, toklen)
+                && (*env)[toklen] == '=')
             {
+                char* const envstr = strdup(*env);
+                AE(envstr);
+            
                 retlen += sizeof(char*);
                 AE(ret = realloc(ret, retlen));
                 ret[tokindex] = envstr;
