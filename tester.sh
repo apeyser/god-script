@@ -1,16 +1,18 @@
 echo "Me: $0"
 echo "Args: $*"
+echo "Bash: $BASH"
 
 echo "Real uid: $(id -u -r)"
-echo "Effecutive uid $(id -u)"
+echo "Effecutive uid: $(id -u)"
 
-whoami
+echo "I am: $(whoami)"
 echo
 
 echo Env:
 env
 
 echo "Return some stuff, hit ctrl-d to end"
-cat  | sed -re 's/^/Hi: /g'
+sed -re 's/^/Hi: /g'
 
+echo "Done"
 [[ $1 != error ]] || exit 5

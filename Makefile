@@ -11,16 +11,16 @@ XXD=xxd -i
 %: %.sh
 
 %.sh.h: %.sh
-	$(XXD) $< $@
+	$(XXD) -i $< $@
 
-SCRIPTVAR=$(subst -,_,$*)_sh
+VAR=$(subst -,_,$*)
 %: suider.c %.sh.h
 	@echo "Preserving environmental variables for $@: $(SAVEVARS)"
-	$(CC) $(CPPFLAGS) $(CFLAGS) \
-		-DSCRIPTFILE=\"$*.sh.h\" \
-		-DSCRIPTVAR=$(SCRIPTVAR) \
-		-DSCRIPTVARLEN=$(SCRIPTVAR)_len \
-		-DSAVEVARS=\"$(SAVEVARS)\" \
+	$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
+		-D$(VAR)_sh=script			\
+		-include "$*.sh.h" 		\
+		-include "bash.h" 		\
+		-DSAVEVARS=$(SAVEVARS) 		\
 		-o $@ $<
 	$(CHOWN) $(CHOWN_USER) $@
 	$(CHMOD) $(CHMODFL) $@
@@ -33,4 +33,4 @@ EXECS = tester restart-pointer
 all: $(EXECS)
 clean: ; rm -f $(EXECS)
 
-.SECONDARY:
+#.SECONDARY:

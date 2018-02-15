@@ -5,8 +5,6 @@
 #include <sys/wait.h>
 #include <string.h>
 
-#include SCRIPTFILE
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -18,15 +16,18 @@ void error(const char *s) {
     exit(-1);
 }
 
-#define ERROR(f) if ((f) < 0) error(#f)
-#define AE(f) if (!(f)) error(#f)
+#define STR_EXPAND(tok) #tok
+#define STR(tok) STR_EXPAND(tok)
+
+#define E(f)  if ((f) < 0) error(#f)
+#define AE(f) if (!(f))    error(#f)
 
 char** cleanenv() {
     char** ret = NULL;
     size_t retlen = 0;
     char* tok;
     size_t tokindex;
-    char* const savevars = strdup(SAVEVARS);
+    char* const savevars = strdup(STR(SAVEVARS));
     AE(savevars);
 
     for (tokindex = 0, tok = strtok(savevars, ":");
@@ -58,66 +59,52 @@ char** cleanenv() {
     return ret;
 }
 
-char *const *mkargs(int argc, char *argv[]) {
-    const size_t extra = 4;
-    const size_t nargc = argc+extra;
-    char* *nargv;
-    size_t i;
-    
-    AE(nargv = malloc((nargc+1)*sizeof(char**)));
-    i = 0;
-    nargv[i++] = argv[0];
-    nargv[i++] = "--noprofile";
-    nargv[i++] = "--norc";
-    nargv[i++] = "-s";
-    nargv[i++] = "--";
-    
-    for (i = 1; i < argc+1; i++)
-        nargv[i+extra] = argv[i];
+void execute(int argc, char* argv[], int rd) {
+    int devlen;
+    char* dev;
 
-    return nargv;
+    char** rargv; char* shell;
+    
+    E(devlen = snprintf(NULL, 0, "/dev/fd/%i", rd));
+    AE(dev = malloc((devlen+1)*sizeof(char)));
+    E(snprintf(dev, devlen+1, "/dev/fd/%i", rd));
+    
+    E(mkargs(argc, argv, dev, &shell, &rargv));
+    environ = cleanenv();
+    E(execv(shell, rargv));
 }
 
 // cleanenv && mkargs do not clean up memory allocations:
 // an image swap will immediately follow
-static int sfd;
 void reader(int rd, int wr, int argc, char* argv[]) {
     pid_t f;
 
-    ERROR(sfd = dup(0));
-    
-    ERROR(f = fork());
+    E(f = fork());
     if (f > 0) return;
     
-    ERROR(setuid(geteuid())); // become only root
-    
-    ERROR(close(wr));
-    ERROR(dup2(rd, 0));
-    ERROR(close(rd));
+    E(setuid(geteuid())); // become only root   
 
-    environ = cleanenv();
-    ERROR(execv("/bin/bash", mkargs(argc, argv)));
+    E(close(wr));
+    execute(argc, argv, rd);
 }
 
 void writer(int rd, int wr) {
-    ERROR(seteuid(getuid())); // give up root
+    E(seteuid(getuid())); // give up root
 
-    ERROR(close(sfd));    
-    ERROR(close(rd));
-    ERROR(dprintf(wr, "export STDIN=%i\n%*s",
-                  sfd, SCRIPTVARLEN, SCRIPTVAR));
-    ERROR(close(wr));
+    E(close(rd));
+    E(write(wr, script, sizeof(script)));
+    E(close(wr));
 }
 
 int main(int argc, char* argv[]) {
     int fd[2];
     int wstatus;
 
-    ERROR(pipe(fd));
+    E(pipe(fd));
 
     reader(fd[0], fd[1], argc, argv);
     writer(fd[0], fd[1]);
-    ERROR(wait(&wstatus));
+    E(wait(&wstatus));
 
     if (WIFEXITED(wstatus))
         return WEXITSTATUS(wstatus);
