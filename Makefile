@@ -56,7 +56,7 @@ restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 
 # STAGE target-name
 #
-# stage-name = $(EXECS:%=%.stage-name)
+# stage-name += $(EXECS:%=%.stage-name)
 # .PHONY: stage-name $(stage-name)
 # stage-name: $(stage-name)
 #
@@ -68,7 +68,7 @@ restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
 # stage-name: other-deps
 #
 define STAGE =
-$(1) = $$(EXECS:%=%.$(1))
+$(1) += $$(EXECS:%=%.$(1))
 .PHONY: $(1) $$($(1))
 $(1): $$($(1))
 endef
@@ -76,6 +76,10 @@ endef
 ###################################################
 # Boiler plate for exec, clean, intall, distclean #
 ###################################################
+
+# initialization for stages
+clean = $(HEADERS:%=%.clean)
+distclean: clean
 
 # stages
 stages = exec clean install distclean
@@ -88,16 +92,10 @@ $(exec): %.exec: % ; $(EXECCMD)
 CLEANCMD = rm -f "$*"
 $(clean): %.clean: ; $(CLEANCMD)
 
-hclean = $(HEADERS:%=%.clean)
-.PHONY: $(hclean)
-clean: $(hclean)
-$(hclean): %.clean: ; $(CLEANCMD)
-
-INSTALLCMD = $(INSTALL) -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)/$*"
+INSTALLCMD = $(INSTALL) -D -o $(CHOWN_USER) -m $(CHMODFL) "$*" "$(DESTDIR)$(prefix)$*"
 $(install): %.install: % ; $(INSTALLCMD)
 
-DISTCLEANCMD = rm -f "$(DESTDIR)$(prefix)/$*"
+DISTCLEANCMD = rm -f "$(DESTDIR)$(prefix)$*"
 $(distclean): %.distclean: ; $(DISTCLEANCMD)
-distclean: clean
 
 #.SECONDARY:
