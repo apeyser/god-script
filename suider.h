@@ -7,16 +7,19 @@
 #include <string.h>
 #include <stdio.h>
 
+// called to exit on error
 void error(const char *s) {
     perror(s);
     exit(-1);
 }
 
-#define STR_EXPAND(tok) #tok
-#define STR(tok) STR_EXPAND(tok)
-
+// macros for error with check
 #define E(f)  if ((f) < 0) error(#f)
 #define AE(f) if (!(f))    error(#f)
+
+// stringify a MACRO
+#define STR_EXPAND(tok) #tok
+#define STR(tok) STR_EXPAND(tok)
 
 ///////////////////////////////////////////////////////
 // prototype for *.*.h

@@ -85,5 +85,5 @@ int main(int argc, char* argv[]) {
     if (WIFEXITED(wstatus))
         return WEXITSTATUS(wstatus);
 
-    return -1; // core dump or such
+    return -127; // core dump or such
 }
