@@ -1,3 +1,23 @@
+echo() {
+    builtin echo "$@"
+}
+
+env() {
+    command /usr/bin/env "$@"
+}
+
+sed() {
+    command /usr/bin/sed "$@"
+}
+
+id() {
+    command /usr/bin/id "$@"
+}
+
+whoami() {
+    command /usr/bin/whoami "$@"
+}
+
 echo "Me: $0"
 echo "Args: $*"
 echo "Bash: $BASH"
@@ -9,7 +29,7 @@ echo "I am: $(whoami)"
 echo
 
 echo Env:
-env
+/usr/bin/env
 
 echo "Return some stuff, hit ctrl-d to end"
 sed -re 's/^/Hi: /g'
