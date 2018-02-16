@@ -16,7 +16,12 @@ SHSRC = tester.sh restart-pointer.sh
 SHEXEC = $(SHSRC:%.sh=%)
 PYSRC = pytester.py
 PYEXEC = $(PYSRC:%.py=%)
+
+SRCS = $(SHSRC) $(PYSRC)
 EXECS = $(SHEXEC) $(PYEXEC)
+
+# And default variables
+CFLAGS = -g -Wall
 
 ###################################################
 # default all                                     #
@@ -32,7 +37,7 @@ define XXDCMD
 { echo 'unsigned char script[] = {' && $(XXD) && echo '};' ; }<$< >$@
 endef
 
-HEADERS= $(SHSRC:%=%.h) $(PYSRC:%=%.h)
+HEADERS = $(SRCS:%=%.h)
 $(HEADERS): %.h: % Makefile; $(XXDCMD)
 
 ###################################################
