@@ -25,14 +25,15 @@ void error(const char *s) {
 char** cleanenv() {
     char** ret = NULL;
     size_t retlen = 0;
+    size_t retindex = 0;
+
     char* tok;
-    size_t tokindex;
     char* const savevars = strdup(STR(SAVEVARS));
     AE(savevars);
 
-    for (tokindex = 0, tok = strtok(savevars, ":");
+    for (tok = strtok(savevars, ":");
          tok;
-         tokindex++, tok = strtok(NULL, ":"))
+         tok = strtok(NULL, ":"))
     {
         const int toklen = strlen(tok);
         char** env;
@@ -41,20 +42,15 @@ char** cleanenv() {
             if (! strncmp(tok, *env, toklen)
                 && (*env)[toklen] == '=')
             {
-                char* const envstr = strdup(*env);
-                AE(envstr);
-            
-                retlen += sizeof(char*);
-                AE(ret = realloc(ret, retlen));
-                ret[tokindex] = envstr;
+                AE(ret = realloc(ret, retlen += sizeof(char*)));
+                ret[retindex++] = *env;
                 break;
             }
         }
     }
 
-    retlen += sizeof(char*);
-    AE(ret = realloc(ret, retlen));
-    ret[tokindex] = NULL;
+    AE(ret = realloc(ret, retlen += sizeof(char*)));
+    ret[retindex] = NULL;
 
     return ret;
 }
