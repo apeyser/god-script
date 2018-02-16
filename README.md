@@ -97,8 +97,8 @@ The interpreter is sanitized as much as can be done easily: '-p' for bash, '-s' 
 
 Of course -- all the paths in your script should be absolute!<br />
 You should be careful!<br/>
-Sanitze inputs!<br />
-Give up EUID == 0 as soon as you can!<br />
+Sanitize inputs!<br />
+Give up `$EUID == 0` as soon as you can!<br />
 **In fact, don't do this at all!**
   
 ## Authors
