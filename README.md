@@ -14,11 +14,11 @@ Linux doesn't like setuid scripts, unlike BSD etc. So, we implement something si
 * The environment is also sanitized
 
 ### Prerequisites
-* GNU Make
-* C compiler
-* XDD
-* install
-* Bash, Python, any other script interpreters you'd like to add
+* GNU Make (specifically -- overly baroque Makefile)
+* C compiler (any plain old-fashioned C)
+* xxd (vim-common)
+* install (coreutils)
+* Bash, Python3, any other script interpreters you'd like to add
 
 ### Installing
 ```
@@ -75,7 +75,7 @@ The environment is cleaned up: all environmental variables are removed before st
 
 The interpreter is sanitized as much as is easily doable: '-p' for bash, '-s' for python, same should be done for other interpreters.
 
-Of course -- all the paths in your script should be absolute! You should be careful! Sanitze inputs! Give up EUID == 0 as soon as you can! In fact, don't do this at all!
+Of course -- all the paths in your script should be absolute!<br /> You should be careful! Sanitze inputs!<br /> Give up EUID == 0 as soon as you can!<br /> In fact, don't do this at all!
   
 ## Authors
 * **Alex Peyser** - *Initial work* - [apeyser](https://github.com/apeyser)
