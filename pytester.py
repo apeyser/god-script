@@ -11,7 +11,7 @@ print("Exec: ", sys.executable)
 print("Real uid: ", os.getuid())
 print("Effective uid: ", os.geteuid())
 
-print("I am: ", getpass.getuser())
+print("I am: ", getpass.getuser(), "\n")
 
 for v in os.environ:
     print(v, "=", os.environ[v])

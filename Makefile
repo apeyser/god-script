@@ -33,7 +33,7 @@ define XXDCMD
 endef
 
 HEADERS= $(SHSRC:%=%.h) $(PYSRC:%=%.h)
-$(HEADERS): %.h: %; $(XXDCMD)
+$(HEADERS): %.h: % Makefile; $(XXDCMD)
 
 ###################################################
 # executable build deps                           #
@@ -42,26 +42,27 @@ $(HEADERS): %.h: %; $(XXDCMD)
 define BUILD
 @echo "Preserving environmental variables for $@: $(SAVEVARS)"
 $(CC) $(CPPFLAGS) $(CFLAGS)	 	\
-	-include "$(word 3,$^)"	 	\
-	-include "$(<D)/$(HEADER)" 	\
+	-include "$(3)"	 	\
+	-include "$(2)" 	\
 	-DSAVEVARS=$(SAVEVARS) 		\
-	-o $@ "$(<D)/suider.c"
+	-o $@ "$(1)"
 endef
 
 $(SHEXEC): HEADER=bash.h
-$(SHEXEC): %: suider.c bash.h %.sh.h
-	$(BUILD)
+$(SHEXEC): %: suider.c bash.h %.sh.h Makefile
+	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
 $(PYEXEC): HEADER=python.h
-$(PYEXEC): %: suider.c python.h %.py.h 
-	$(BUILD)
+$(PYEXEC): %: suider.c python.h %.py.h Makefile
+	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
 ###################################################
 # executable flags                                #
 ###################################################
 
-tester: SAVEVARS=EDITOR
+tester: SAVEVARS=EDITOR:XXD:WINDOWID
 restart-pointer: SAVEVARS=DISPLAY:XAUTHORITY:USER
+pytester: SAVEVARS=EDITOR:XXD:WINDOWID
 
 ###################################################
 # Boiler function                                 #
