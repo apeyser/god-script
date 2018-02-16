@@ -1,3 +1,11 @@
+##############
+# make sure we get the right commands
+# functions are early in command lookup
+# after aliases
+#
+
+export PATH=/usr/bin:/usr/sbin:/bin
+
 echo() {
     builtin echo "$@"
 }
@@ -18,6 +26,10 @@ whoami() {
     command /usr/bin/whoami "$@"
 }
 
+############
+# and the real script
+#
+
 echo "Me: $0"
 echo "Args: $*"
 echo "Bash: $BASH"
@@ -29,7 +41,7 @@ echo "I am: $(whoami)"
 echo
 
 echo Env:
-/usr/bin/env
+env
 
 echo "Return some stuff, hit ctrl-d to end"
 sed -re 's/^/Hi: /g'

@@ -44,7 +44,7 @@ $(HEADERS): %.h: % Makefile; $(XXDCMD)
 # executable build deps                           #
 ###################################################
 
-# BUILD suider.c script-header xdd-header
+# BUILD suider.c script-header xxd-header
 define BUILD
 @echo "Preserving environmental variables for $@: $(SAVEVARS)"
 $(CC) $(CPPFLAGS) $(CFLAGS)	\
