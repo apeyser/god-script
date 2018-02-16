@@ -1,6 +1,6 @@
 #include "suider.h"
 
-static char* xargv[] = {"-s", NULL};
+static char* xargv[] = {"-s", "--", NULL};
 
 int mkargs(int argc, char *argv[], char* dev, char** shell, char*** rargv)
 {
