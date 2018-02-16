@@ -49,11 +49,9 @@ $(CC) $(CPPFLAGS) $(CFLAGS)	\
 	-o $@ "$(1)"
 endef
 
-$(SHEXEC): HEADER=bash.h
 $(SHEXEC): %: suider.c bash.h %.sh.h Makefile
 	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
-$(PYEXEC): HEADER=python.h
 $(PYEXEC): %: suider.c python.h %.py.h Makefile
 	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
