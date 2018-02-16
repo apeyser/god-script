@@ -54,10 +54,10 @@ $(CC) $(CPPFLAGS) $(CFLAGS)	\
 	-o $@ "$(1)"
 endef
 
-$(SHEXEC): %: suider.c bash.h %.sh.h Makefile
+$(SHEXEC): %: suider.c bash.h %.sh.h suider.h Makefile
 	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
-$(PYEXEC): %: suider.c python.h %.py.h Makefile
+$(PYEXEC): %: suider.c python.h %.py.h suider.h Makefile
 	$(call BUILD,$(word 1,$^),$(word 2,$^),$(word 3,$^))
 
 ###################################################

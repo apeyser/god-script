@@ -1,21 +1,6 @@
-#include <unistd.h>
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <stdio.h>
+#include "suider.h"
 
 extern char **environ;
-
-void error(const char *s) {
-    perror(s);
-    exit(-1);
-}
-
-#define STR_EXPAND(tok) #tok
-#define STR(tok) STR_EXPAND(tok)
-
-#define E(f)  if ((f) < 0) error(#f)
-#define AE(f) if (!(f))    error(#f)
 
 char** cleanenv() {
     char** ret = NULL;
@@ -73,7 +58,7 @@ void reader(int rd, int wr, int argc, char* argv[]) {
     E(f = fork());
     if (f > 0) return;
     
-    E(setuid(geteuid())); // become only root   
+    //E(setuid(geteuid())); // become only root   
 
     E(close(wr));
     execute(argc, argv, rd);
