@@ -1,6 +1,10 @@
 # god-script
 Compile a script into an executable image to run as setuid
 
+Remember: this is all very bad to do, like filling your code with goto's or using plain words as your password.
+
+In fact, forget that you've even seen this repo.
+
 ## Getting started
 Linux doesn't like setuid scripts, unlike BSD etc. So, we implement something similar to the BSD treatment of setuid scripts for Linux
 * A script is placed in an executable
@@ -22,7 +26,7 @@ make
 sudo make install prefix=${prefix}/bin
 ```
 
-For each script ${name}.${ext}, an executable ${name} is created which is setuid and ultimately runs the embedded script ${name}.${ext}. By embeded, I mean it's a string embedded in the executable dumped through a file-descriptor into the proper interpreter, which has been run with the current uid, euid and with the environmental variables cleared, plus selected flags to the interpreter (-p for bash, -s for python, ..)
+For each script ${name}.${ext}, an executable ${name} is created which is setuid and ultimately runs the embedded script ${name}.${ext}. By embedded, I mean it's a string embedded in the executable dumped through a file-descriptor into the proper interpreter, which has been run with the current uid, euid and with the environmental variables cleared, plus selected flags to the interpreter (-p for bash, -s for python, ..)
 
 ### Adapting
 Because of course the point is to adapt the system and not to use the random scripts here
@@ -61,6 +65,17 @@ Because of course the point is to adapt the system and not to use the random scr
   $(executablename): SAVEVARS=VAR1:VAR2:...
   ```
   * See included scripts for examples
+  
+### Comments
+This avoids the most obvious security issues with setuid scripts.
+
+There is no race condition between starting the script and the interpreter: the script is fixed inside the executable and gets transferred through an unnamed unix pipe (using the /dev/fd/ directory for Linux) into the interpreter.
+
+The environment is cleaned up: all environmental variables are removed before starting the interpreters, except for compile-time determined environmental variables. No LD_LIBRARY_PATH, unless you decide to put it in the Makefile.
+
+The interpreter is sanitized as much as is easily doable: '-p' for bash, '-s' for python, same should be done for other interpreters.
+
+Of course -- all the paths in your script should be absolute! You should be careful! Sanitze inputs! Give up EUID == 0 as soon as you can! In fact, don't do this at all!
   
 ## Authors
 * **Alex Peyser** - *Initial work* - [apeyser](https://github.com/apeyser)
