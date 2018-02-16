@@ -41,10 +41,10 @@ $(HEADERS): %.h: % Makefile; $(XXDCMD)
 
 define BUILD
 @echo "Preserving environmental variables for $@: $(SAVEVARS)"
-$(CC) $(CPPFLAGS) $(CFLAGS)	 	\
+$(CC) $(CPPFLAGS) $(CFLAGS)	\
 	-include "$(3)"	 	\
 	-include "$(2)" 	\
-	-DSAVEVARS=$(SAVEVARS) 		\
+	-DSAVEVARS=$(SAVEVARS) 	\
 	-o $@ "$(1)"
 endef
 
@@ -81,7 +81,7 @@ pytester: SAVEVARS=EDITOR:XXD:WINDOWID
 # Can add other dependencies:
 # stage-name: other-deps
 #
-define STAGE =
+define STAGE
 $(1) += $$(EXECS:%=%.$(1))
 .PHONY: $(1) $$($(1))
 $(1): $$($(1))
