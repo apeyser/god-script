@@ -22,6 +22,8 @@ make
 sudo make install prefix=${prefix}/bin
 ```
 
+For each script ${name}.${ext}, an executable ${name} is created which is setuid and ultimately runs the embedded script ${name}.${ext}. By embeded, I mean it's a string embedded in the executable dumped through a file-descriptor into the proper interpreter, which has been run with the current uid, euid and with the environmental variables cleared, plus selected flags to the interpreter (-p for bash, -s for python, ..)
+
 ### Adapting
 Because of course the point is to adapt the system and not to use the random scripts here
 
@@ -46,17 +48,18 @@ Because of course the point is to adapt the system and not to use the random scr
     * Set *shell to complete path to interpreter 
     * Set xargv to arguments to interpreter that precede the script name and arguments
       * For example, `shell=/bin/bash`, `xargv = {-p, --, NULL}` or `shell=/usr/bin/python3`, `xargv - {-s, --, NULL}`
-    * Adapt Makefile
-      * Add variable for the script types ($(X)SRC, $(X)EXEC, EXECS += $(X)EXECS, SRCS += $(X)SRCS)
-      * Add dependency for the type:
-      ```
-      $(($X)EXEC: %: suider.c ${interpreter}.h %.$(ext).h suider.h Makefile
-        $(call BUILD,$(word 1,$^),$(word 2, $^),$(word 3,$^))
-      ```
-  * If environmental variables need to be preserved add:
+   * Adapt Makefile to interpreter
+     * Add variable for the script types ($(X)SRC, $(X)EXEC, EXECS += $(X)EXECS, SRCS += $(X)SRCS)
+     * Add dependency for the type:
      ```
-     $(executablename): SAVEVARS=VAR1:VAR2:...
+     $(($X)EXEC: %: suider.c ${interpreter}.h %.$(ext).h suider.h Makefile
+       $(call BUILD,$(word 1,$^),$(word 2, $^),$(word 3,$^))
      ```
+  * Add script to $(X)SRC
+  * If environmental variables need to be preserved add to Makefile:
+  ```
+  $(executablename): SAVEVARS=VAR1:VAR2:...
+  ```
   * See included scripts for examples
   
 ## Authors
