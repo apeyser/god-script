@@ -12,10 +12,10 @@ INSTALL = install
 # prefix =
 
 # And our executables
-SHSRC = tester.sh restart-pointer.sh
-SHEXEC = $(SHSRC:%.sh=%)
-PYSRC = pytester.py
-PYEXEC = $(PYSRC:%.py=%)
+SHSRC = scripts/tester.sh scripts/restart-pointer.sh
+SHEXEC = $(SHSRC:scripts/%.sh=%)
+PYSRC = scripts/pytester.py
+PYEXEC = $(PYSRC:scripts/%.py=%)
 
 SRCS = $(SHSRC) $(PYSRC)
 EXECS = $(SHEXEC) $(PYEXEC)
@@ -37,8 +37,8 @@ define XXDCMD
 { echo 'unsigned char script[] = {' && $(XXD) && echo '};' ; }<$< >$@
 endef
 
-HEADERS = $(SRCS:%=%.h)
-$(HEADERS): %.h: % Makefile; $(XXDCMD)
+HEADERS = $(SRCS:scripts/%=%.h)
+$(HEADERS): %.h: scripts/% Makefile; $(XXDCMD)
 
 ###################################################
 # executable build deps                           #
